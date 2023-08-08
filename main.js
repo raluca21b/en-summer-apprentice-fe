@@ -7,7 +7,8 @@ function navigateTo(url) {
 function getHomePageTemplate() {
   return `
    <div id="content" >
-      <img src="./src/assets/Endava.png" alt="summer">
+      <img src="./src/assets/ticket.png" alt="ticket-sale" class="main-image">
+      <h1>All Events</h1>
       <div class="events flex items-center justify-center flex-wrap">
       </div>
     </div>
@@ -61,28 +62,63 @@ function renderHomePage() {
   mainContentDiv.innerHTML = getHomePageTemplate();
   // Sample hardcoded event data
   const eventData = {
-    id: 1,
-    description: 'Sample event description.',
-    img: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80',
-    name: 'Sample Event',
-    ticketCategories: [
-      { id: 1, description: 'General Admission' },
-      { id: 2, description: 'VIP' },
-    ],
+    eventID: 1,
+    img: "https://asset.brandfetch.io/idGVfES5Xz/idpmuZ_bwR.jpeg",
+        venueDTO: {
+            venueID: 1,
+            location: "Aleea Stadionului 2, Cluj-Napoca",
+            type: "Stadion",
+            capacity: 1000
+        },
+        eventType: "Festival de Muzica",
+        eventDescription: "muzica buna",
+        eventName: "Untold",
+        startDate: "2023-07-18T10:00:00",
+        endDate: "2023-07-22T23:59:59",
+        ticketsCategory: [
+            {
+                ticketCategoryID: 1,
+                description: "Standard",
+                price: 800.00
+            },
+            {
+                ticketCategoryID: 5,
+                description: "VIP",
+                price: 1500.00
+            }
+        ]
+    
   };
   // Create the event card element
   const eventCard = document.createElement('div');
-  eventCard.classList.add('event-card'); 
+  eventCard.classList.add('event-card');
+
+  // Create the radio buttons markup
+  const radioButtonsMarkup = eventData.ticketsCategory.map(ticket => `
+  <label>
+    <input type="radio" name="ticketCategory" value="${ticket.ticketCategoryID}">
+    ${ticket.description} - $${ticket.price.toFixed(2)}
+  </label><br>`)
+  .join('');
+
   // Create the event content markup
   const contentMarkup = `
     <header>
-      <h2 class="event-title text-2xl font-bold">${eventData.name}</h2>
+      <h2 class="event-title text-2xl font-bold">${eventData.eventName}</h2>
     </header>
     <div class="content">
-      <img src="${eventData.img}" alt="${eventData.name}" class="event-image w-full height-200 rounded object-cover mb-4">
-      <p class="description text-gray-700">${eventData.description}</p>
+      <img src="${eventData.img}" alt="${eventData.eventName}" class="event-image w-full h-200 rounded object-cover mb-6">
+      <h3 class="description text-gray-700">${eventData.eventDescription}</h3>
+      <p  class="description text-gray-700">Location: ${eventData.venueDTO.location}</p>
+      <p  class="description text-gray-700">Capacity: ${eventData.venueDTO.capacity}</p>
+      <p  class="description text-gray-700">Period: ${eventData.startDate}   -   ${eventData.endDate} </p>
+      <p  class="description text-gray-700"></p>
+      <div class="radio-group">${radioButtonsMarkup}</div> 
+      <label for="numberOfTickets">Number of Tickets:  </label>
+      <input type="number" id="numberOfTickets" name="numberOfTickets" min="1" value="1"  max="20">
+      <button class="add-to-cart-btn"> Buy </button>
     </div>
-  `;
+  `; 
 
   eventCard.innerHTML = contentMarkup;
   const eventsContainer = document.querySelector('.events');

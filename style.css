@@ -2,6 +2,12 @@ body {
   font-family: 'Roboto', sans-serif;
 }
 
+.main-image{
+  height: 500px;
+  width: 100%;
+  padding: 6px;
+}
+
 .events {
   justify-content: center;
   flex-wrap: wrap;
@@ -63,11 +69,12 @@ h1 {
 .add-to-cart-btn {
   background: #de411b;
   margin: 22px auto;
+  border-radius: 20px;
+  color: #fff;
   display: block;
-  width: 100%;
+  width: 100px;
 }
 
 .main-content-component {
   margin-bottom: 40px;
 }
-
