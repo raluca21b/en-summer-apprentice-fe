@@ -64,7 +64,6 @@ function renderHomePage() {
   fetchEvets().then(data =>{
     addEventsOnPage(data);
   })
-
 }
 
 
@@ -141,7 +140,6 @@ const createEventElement = (eventData)=>{
         addToCartButton.disabled = false;
     } else{
         addToCartButton.disabled = true;
-
     }
   })
 
@@ -234,7 +232,6 @@ function renderOrdersPage(categories) {
     })
     
   }
-
 }
 
 
