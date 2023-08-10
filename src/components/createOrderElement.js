@@ -1,16 +1,20 @@
-import { addLoader, removeLoader } from "./loader";
 import { useStyle } from "./styles";
-
 
 export const createOrderElement = (order) =>{
     const purchase = document.createElement('div');
     purchase.id = `purchase-${order.orderID}`;
     purchase.classList.add(...useStyle('purchase'));
-  
-    const purchaseTitle = document.createElement('p');
-    purchaseTitle.classList.add(...useStyle('purchaseTitle'));
-    purchaseTitle.innerHTML = `${order.eventID}`;
-    purchase.appendChild(purchaseTitle);
+
+    const eventId = order.eventID;
+    fetchEventDetailsByEventId(eventId).then((eventData)=>{
+        if(eventData){
+            const eventNameData = eventData.eventName;
+            const purchaseTitle = document.createElement('p');
+            purchaseTitle.classList.add(...useStyle('purchaseTitle'));
+            purchaseTitle.innerHTML = eventNameData;
+            purchase.insertBefore(purchaseTitle, purchase.firstChild);
+        }
+    });
   
     const purchaseQuantity = document.createElement('input');
     purchaseQuantity.classList.add(...useStyle('purchaseQuantity'));
@@ -86,4 +90,9 @@ export const createOrderElement = (order) =>{
   
     return purchase;
   }
-  
+
+async function fetchEventDetailsByEventId(eventID){
+    const response = await fetch(`http://localhost:8080/events/${eventID}`);
+    const eventData = await response.json();
+    return eventData;
+}
