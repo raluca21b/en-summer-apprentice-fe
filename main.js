@@ -66,7 +66,6 @@ function renderHomePage() {
   })
 }
 
-
 async function fetchEvets(){
   const response = await fetch('http://localhost:8080/events');
   const data = await response.json();
@@ -83,8 +82,6 @@ const addEventsOnPage = (events) => {
     })
   }
 }
-
-
 
 const createEventElement = (eventData)=>{
   const {eventID, eventName, eventDescription, venueDTO, startDate,endDate, ticketsCategory} = eventData;
