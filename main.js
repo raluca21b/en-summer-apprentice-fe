@@ -1,3 +1,4 @@
+import { useStyle } from "./src/components/styles";
 // Navigate to a specific URL
 function navigateTo(url) {
   history.pushState(null, null, url);
@@ -10,6 +11,22 @@ function getHomePageTemplate() {
       <img src="./src/assets/ticket.png" alt="ticket-sale" class="main-image">
       <h1>All Events</h1>
       <div class="events flex items-center justify-center flex-wrap">
+      <div class = "purchases ml-6 mr-6">
+          <div class="bg-white px-4 py-3 fap-x-4 flex font-bold">
+            <button class="flex flex-1 text-center justify-center" id="sorting-button-1">
+              <span >Name</span>
+            </button>
+            <span class="flex-1">No of Tickets</span>
+            <span class="flex-1">Category</span>
+            <span class="flex-1 hidden md:flex">Ordered At</span>
+            <button class="flex flex-1 text-center justify-center" id="sorting-button-2">
+              <span >Total Pirce</span>
+            </button>
+            <span class="w-28 sm:w-8"></span>
+          </div>
+          <div id="purchases-content">
+          </div>
+      </div>
       </div>
     </div>
   `;
@@ -66,7 +83,6 @@ function renderHomePage() {
   })
 }
 
-
 async function fetchEvets(){
   const response = await fetch('http://localhost:8080/events');
   const data = await response.json();
@@ -84,12 +100,11 @@ const addEventsOnPage = (events) => {
   }
 }
 
-
-
 const createEventElement = (eventData)=>{
   const {eventID, eventName, eventDescription, venueDTO, startDate,endDate, ticketsCategory} = eventData;
   const eventDiv = document.createElement('div');
   const img = `./src/assets/${eventID}.png`;
+  const addToCartBttnClasses = useStyle('addToCartBttn');
   eventDiv.classList.add('event-card');
 
   //Create the event content markup
@@ -150,8 +165,9 @@ const createEventElement = (eventData)=>{
   eventDiv.appendChild(label);
 
   const addToCartButton = document.createElement('button');
-  addToCartButton.classList.add('add-to-cart-btn');
+  addToCartButton.classList.add(...addToCartBttnClasses);
   addToCartButton.textContent="Buy";
+  addToCartButton.disabled=true;
 
   eventDiv.appendChild(addToCartButton);
 
@@ -239,6 +255,11 @@ const createOrderElement = (order) =>{
   const purchase = document.createElement('div');
   purchase.id = `purchase-${order.orderID}`;
   purchase.classList.add(...useStyle('purhcase'));
+
+  const purchaseTitle = document.createElement('p');
+  purchaseTitle.classList.add(...useStyle('purchaseTitle'));
+
+
 }
 
 // !!!!!!!!!!!!!!!!!!!!! get orders !!!!!!!!!!!!!!
