@@ -18,7 +18,7 @@ function getHomePageTemplate() {
 function getOrdersPageTemplate() {
   return `
     <div id="content">
-      <h1 class="text-2xl mb-4 mt-8 text-center">Purchased Tickets</h1>
+    <h1 class="text-2xl mb-4 mt-8 text-center">Purchased Tickets</h1>
     </div>
   `;
 }
@@ -163,10 +163,8 @@ const createEventElement = (eventData)=>{
     } else{
       handleAddToCart(eventID,input,selectedTicketCategoryRadio,addToCartButton);
     }
-   
   });
 
- 
   return eventDiv;
 }
 
@@ -202,46 +200,10 @@ const handleAddToCart = (eventID,input,selectedTicketCategoryRadio,addToCartButt
   }
 };
 
-// !!!!!!!!!!!!!!!!!!!!! get orders !!!!!!!!!!!!!!
-async function fetchOrders(){
-  const response = await fetch("http://localhost:8080/orders");
-  const orders = await response.json();
-  return orders;
-}
-
-
 function renderOrdersPage(categories) {
   const mainContentDiv = document.querySelector('.main-content-component');
   mainContentDiv.innerHTML = getOrdersPageTemplate();
-  const purchaseDiv = document.querySelector('.purchases')
-  const purchasesContent = document.getElementById('purchases-content');
-  
-  if (purchaseDiv){
-    fetchOrders().then(orders =>{
-      if(orders.length){
-        console.log("Here comes the loader with timeout");
-        orders.forEach((order) =>{
-          const newOrder = createOrderElement(order);
-          purchasesContent.appendChild(newOrder);
-        });
-        purchaseDiv.appendChild(purchasesContent);
-      } else{
-        console.log("Here comes the remove loader without timeout");
-        mainContentDiv.innerHTML = 'no orders yet';
-      }
-    })
-    
-  }
 }
-
-
-const createOrderElement = (order) =>{
-  const purchase = document.createElement('div');
-  purchase.id = `purchase-${order.orderID}`;
-  purchase.classList.add(...useStyle('purhcase'));
-}
-
-// !!!!!!!!!!!!!!!!!!!!! get orders !!!!!!!!!!!!!!
 
 // Render content based on URL
 function renderContent(url) {
