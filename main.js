@@ -18,7 +18,7 @@ function getHomePageTemplate() {
 function getOrdersPageTemplate() {
   return `
     <div id="content">
-    <h1 class="text-2xl mb-4 mt-8 text-center">Purchased Tickets</h1>
+      <h1 class="text-2xl mb-4 mt-8 text-center">Purchased Tickets</h1>
     </div>
   `;
 }
@@ -60,76 +60,191 @@ function setupInitialPage() {
 function renderHomePage() {
   const mainContentDiv = document.querySelector('.main-content-component');
   mainContentDiv.innerHTML = getHomePageTemplate();
-  // Sample hardcoded event data
-  const eventData = {
-    eventID: 1,
-    img: "https://asset.brandfetch.io/idGVfES5Xz/idpmuZ_bwR.jpeg",
-        venueDTO: {
-            venueID: 1,
-            location: "Aleea Stadionului 2, Cluj-Napoca",
-            type: "Stadion",
-            capacity: 1000
-        },
-        eventType: "Festival de Muzica",
-        eventDescription: "muzica buna",
-        eventName: "Untold",
-        startDate: "2023-07-18T10:00:00",
-        endDate: "2023-07-22T23:59:59",
-        ticketsCategory: [
-            {
-                ticketCategoryID: 1,
-                description: "Standard",
-                price: 800.00
-            },
-            {
-                ticketCategoryID: 5,
-                description: "VIP",
-                price: 1500.00
-            }
-        ]
-    
-  };
-  // Create the event card element
-  const eventCard = document.createElement('div');
-  eventCard.classList.add('event-card');
 
-  // Create the radio buttons markup
-  const radioButtonsMarkup = eventData.ticketsCategory.map(ticket => `
-  <label>
-    <input type="radio" name="ticketCategory" value="${ticket.ticketCategoryID}">
-    ${ticket.description} - $${ticket.price.toFixed(2)}
-  </label><br>`)
-  .join('');
+  fetchEvets().then(data =>{
+    addEventsOnPage(data);
+  })
 
-  // Create the event content markup
-  const contentMarkup = `
-    <header>
-      <h2 class="event-title text-2xl font-bold">${eventData.eventName}</h2>
-    </header>
-    <div class="content">
-      <img src="${eventData.img}" alt="${eventData.eventName}" class="event-image w-full h-200 rounded object-cover mb-6">
-      <h3 class="description text-gray-700">${eventData.eventDescription}</h3>
-      <p  class="description text-gray-700">Location: ${eventData.venueDTO.location}</p>
-      <p  class="description text-gray-700">Capacity: ${eventData.venueDTO.capacity}</p>
-      <p  class="description text-gray-700">Period: ${eventData.startDate}   -   ${eventData.endDate} </p>
-      <p  class="description text-gray-700"></p>
-      <div class="radio-group">${radioButtonsMarkup}</div> 
-      <label for="numberOfTickets">Number of Tickets:  </label>
-      <input type="number" id="numberOfTickets" name="numberOfTickets" min="1" value="1"  max="20">
-      <button class="add-to-cart-btn"> Buy </button>
-    </div>
-  `; 
-
-  eventCard.innerHTML = contentMarkup;
-  const eventsContainer = document.querySelector('.events');
-  // Append the event card to the events container
-  eventsContainer.appendChild(eventCard);
 }
+
+
+async function fetchEvets(){
+  const response = await fetch('http://localhost:8080/events');
+  const data = await response.json();
+  return data;
+}
+
+const addEventsOnPage = (events) => {
+  const eventsContainer = document.querySelector('.events');
+  eventsContainer.innerHTML = 'No events to show';
+  if (events.length){
+    eventsContainer.innerHTML = '';
+    events.forEach(event => {
+      eventsContainer.appendChild(createEventElement(event))
+    })
+  }
+}
+
+
+
+const createEventElement = (eventData)=>{
+  const {eventID, eventName, eventDescription, venueDTO, startDate,endDate, ticketsCategory} = eventData;
+  const eventDiv = document.createElement('div');
+  const img = `./src/assets/${eventID}.png`;
+  eventDiv.classList.add('event-card');
+
+  //Create the event content markup
+  const contentMarkup = `
+      <header>
+         <h2 class="event-title text-2xl font-bold">${eventName}</h2>
+      </header>
+      <div class="content">
+        <img src="${img}" alt="${eventName}" class="event-image">
+        <h3 class="description text-gray-700">${eventDescription}</h3>
+        <p  class="description text-gray-700">Location: ${venueDTO.location}</p>
+        <p  class="description text-gray-700">Capacity: ${venueDTO.capacity}</p>
+        <p  class="description text-gray-700">Period: ${startDate}   -   ${endDate} </p>
+        <p  class="description text-gray-700"></p>
+      </div>
+  `;
+  eventDiv.innerHTML = contentMarkup;
+
+  const radioGroup = document.createElement('div');
+
+  const radioButtonsMarkup = eventData.ticketsCategory.map((ticket) => `
+                            <label>
+                              <input type="radio" name="ticketCategory-${eventID}" value="${ticket.ticketCategoryID}">
+                              ${ticket.description} - $${ticket.price.toFixed(2)}
+                            </label><br>
+                            `)
+                            .join('');
+
+  radioGroup.innerHTML = radioButtonsMarkup;  
+
+  eventDiv.appendChild(radioGroup);
+
+  const input = document.createElement('input');
+  input.type = 'number';
+  input.min = '0';
+  input.max = '20';
+  input.value = '0';
+
+  input.addEventListener('blur',()=>{
+    if (!input.value){
+      input.value = 0;
+    }
+  });
+
+  input.addEventListener('input',()=>{
+    const currentQuantity = parseInt(input.value);
+    if (currentQuantity > 0){
+        addToCartButton.disabled = false;
+    } else{
+        addToCartButton.disabled = true;
+
+    }
+  })
+
+  const label = document.createElement('label');
+  label.textContent = 'Number of tickets: ';
+  label.appendChild(input);
+
+  eventDiv.appendChild(label);
+
+  const addToCartButton = document.createElement('button');
+  addToCartButton.classList.add('add-to-cart-btn');
+  addToCartButton.textContent="Buy";
+
+  eventDiv.appendChild(addToCartButton);
+
+  addToCartButton.addEventListener('click', () => {
+    const selectedTicketCategoryRadio = document.querySelector(`input[name="ticketCategory-${eventID}"]:checked`);
+    if (!selectedTicketCategoryRadio) {
+      alert('Please select a ticket category');
+      return;
+    } else{
+      handleAddToCart(eventID,input,selectedTicketCategoryRadio,addToCartButton);
+    }
+   
+  });
+
+ 
+  return eventDiv;
+}
+
+const handleAddToCart = (eventID,input,selectedTicketCategoryRadio,addToCartButton) =>{
+  const quantity = input.value;
+  const ticketCategoryID = selectedTicketCategoryRadio.value;
+  if (parseInt(quantity)){
+      fetch('http://localhost:8080/orders',{
+        method:"POST",
+        headers:{
+          "Content-Type":"application/json",
+        },
+        body:JSON.stringify({
+          eventID:eventID,
+          ticketCategoryID:+ticketCategoryID,
+          numberOfTickets:+quantity
+        })
+      }).then((response) => {
+        return response.json().then((data) =>{
+          if(!response.ok){
+            console.log("Something went wrong...");
+          }
+          return data;
+        })
+      }).then((data) =>{
+        console.log("Added successfully!");
+        input.value = 0;
+        addToCartButton.disabled = true;
+        selectedTicketCategoryRadio.checked = false;
+      })
+  } else{
+    alert('Please enter a valid number!!!');
+  }
+};
+
+// !!!!!!!!!!!!!!!!!!!!! get orders !!!!!!!!!!!!!!
+async function fetchOrders(){
+  const response = await fetch("http://localhost:8080/orders");
+  const orders = await response.json();
+  return orders;
+}
+
 
 function renderOrdersPage(categories) {
   const mainContentDiv = document.querySelector('.main-content-component');
   mainContentDiv.innerHTML = getOrdersPageTemplate();
+  const purchaseDiv = document.querySelector('.purchases')
+  const purchasesContent = document.getElementById('purchases-content');
+  
+  if (purchaseDiv){
+    fetchOrders().then(orders =>{
+      if(orders.length){
+        console.log("Here comes the loader with timeout");
+        orders.forEach((order) =>{
+          const newOrder = createOrderElement(order);
+          purchasesContent.appendChild(newOrder);
+        });
+        purchaseDiv.appendChild(purchasesContent);
+      } else{
+        console.log("Here comes the remove loader without timeout");
+        mainContentDiv.innerHTML = 'no orders yet';
+      }
+    })
+    
+  }
+
 }
+
+
+const createOrderElement = (order) =>{
+  const purchase = document.createElement('div');
+  purchase.id = `purchase-${order.orderID}`;
+  purchase.classList.add(...useStyle('purhcase'));
+}
+
+// !!!!!!!!!!!!!!!!!!!!! get orders !!!!!!!!!!!!!!
 
 // Render content based on URL
 function renderContent(url) {
