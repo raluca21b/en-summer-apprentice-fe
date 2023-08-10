@@ -31,6 +31,7 @@ const bookOfStyles = {
         'focus:outline-none',
         'focus:shadow-outline',
     ],
+    purchaseQuantityWrapper: ['flex', 'flex-row','flex-1'],
     purchaseType: [
         'w-fit',
         'py-1',
@@ -50,8 +51,10 @@ const bookOfStyles = {
         'text-orange-700',
         'flex-1'
     ],
-    purchaseDate:['flex','flex-row','justify-end','flex-1'],
-    purchasePrice:['text-center','flex-1','hidden','md:flex'],
+    purchaseTypeWrapper: ['flex', 'flex-row','flex-1'],
+    purchaseDate:['text-center','flex-1','hidden','md:flex'],
+    purchasePrice:['text-center','w-12','hidden','md:flex'],
+    actions:['sm:mt-0','sm:text-right','w-28'],
     actionButton:[
         'ml-2',
         'text-xl',
@@ -60,6 +63,7 @@ const bookOfStyles = {
         'underline',
         'text-gray-700',
     ],
+    actionsWrapper:['actions','flex','item-center','mt-4'],
     deleteButton: ['hover:text-red-500'],
     cancelButton: ['hover:text-red-500'],
     saveButton: ['hover:text-green-500'],

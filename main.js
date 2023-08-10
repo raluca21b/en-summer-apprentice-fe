@@ -11,22 +11,6 @@ function getHomePageTemplate() {
       <img src="./src/assets/ticket.png" alt="ticket-sale" class="main-image">
       <h1>All Events</h1>
       <div class="events flex items-center justify-center flex-wrap">
-      <div class = "purchases ml-6 mr-6">
-          <div class="bg-white px-4 py-3 fap-x-4 flex font-bold">
-            <button class="flex flex-1 text-center justify-center" id="sorting-button-1">
-              <span >Name</span>
-            </button>
-            <span class="flex-1">No of Tickets</span>
-            <span class="flex-1">Category</span>
-            <span class="flex-1 hidden md:flex">Ordered At</span>
-            <button class="flex flex-1 text-center justify-center" id="sorting-button-2">
-              <span >Total Pirce</span>
-            </button>
-            <span class="w-28 sm:w-8"></span>
-          </div>
-          <div id="purchases-content">
-          </div>
-      </div>
       </div>
     </div>
   `;
@@ -36,6 +20,22 @@ function getOrdersPageTemplate() {
   return `
     <div id="content">
       <h1 class="text-2xl mb-4 mt-8 text-center">Purchased Tickets</h1>
+      <div class = "purchases ml-6 mr-6">
+          <div class="bg-white px-4 py-3 fap-x-4 flex font-bold">
+            <button class="flex flex-1 text-center justify-center" id="sorting-button-1">
+              <span >Name</span>
+            </button>
+            <span class="flex-1">No of Tickets</span>
+            <span class="flex-1">Category</span>
+            <span class="flex-1 hidden md:flex">Ordered At</span>
+            <button class="hidden md:flex text-center" id="sorting-button-2">
+              <span >Total Price</span>
+            </button>
+            <span class="w-28 sm:w-8"></span>
+          </div>
+          <div id="purchases-content">
+          </div>
+      </div>
     </div>
   `;
 }
@@ -233,7 +233,7 @@ function renderOrdersPage(categories) {
   const purchasesContent = document.getElementById('purchases-content');
   
   if (purchaseDiv){
-    fetchOrders().then(orders =>{
+    fetchOrders().then((orders) =>{
       if(orders.length){
         console.log("Here comes the loader with timeout");
         orders.forEach((order) =>{
@@ -246,7 +246,6 @@ function renderOrdersPage(categories) {
         mainContentDiv.innerHTML = 'no orders yet';
       }
     })
-    
   }
 }
 
@@ -254,12 +253,86 @@ function renderOrdersPage(categories) {
 const createOrderElement = (order) =>{
   const purchase = document.createElement('div');
   purchase.id = `purchase-${order.orderID}`;
-  purchase.classList.add(...useStyle('purhcase'));
+  purchase.classList.add(...useStyle('purchase'));
 
   const purchaseTitle = document.createElement('p');
   purchaseTitle.classList.add(...useStyle('purchaseTitle'));
+  purchaseTitle.innerHTML = `${order.eventID}`;
+  purchase.appendChild(purchaseTitle);
 
+  const purchaseQuantity = document.createElement('input');
+  purchaseQuantity.classList.add(...useStyle('purchaseQuantity'));
+  purchaseQuantity.type = 'number';
+  purchaseQuantity.min = '1';
+  purchaseQuantity.value = `${order.numberOfTickets}`;
+  purchaseQuantity.disabled = true;
 
+  const purchaseQuantityWrapper = document.createElement('div');
+  purchaseQuantityWrapper.classList.add(...useStyle('purchaseQuantityWrapper'));
+  purchaseQuantityWrapper.append(purchaseQuantity);
+  purchase.appendChild(purchaseQuantityWrapper);
+
+  const purchaseType = document.createElement('select');
+  purchaseType.classList.add('purchaseType');
+  purchaseType.setAttribute('disabled','true');
+  
+  const defaultOption = document.createElement('option');
+  defaultOption.value = `${order.ticketCategory.description}`;
+  defaultOption.textContent = `${order.ticketCategory.description}`;
+
+  const standardOption = document.createElement('option');
+  standardOption.value = 'Standard';
+  standardOption.textContent = 'Standard';
+
+  const vipOption = document.createElement('option');
+  vipOption.value = 'VIP';
+  vipOption.textContent = 'VIP';
+
+  purchaseType.appendChild(defaultOption);
+  purchaseType.appendChild(standardOption);
+  purchaseType.appendChild(vipOption);
+
+  const purchaseTypeWrapper = document.createElement('div');
+  purchaseTypeWrapper.classList.add(...useStyle('purchaseTypeWrapper'));
+  purchaseTypeWrapper.appendChild(purchaseType);
+  purchase.appendChild(purchaseTypeWrapper);
+
+  const purchaseDate = document.createElement('div');
+  purchaseDate.classList.add(...useStyle('purchaseDate'));
+  purchaseDate.innerText = new Date(order.orderedAt).toLocaleDateString();
+  purchase.appendChild(purchaseDate);
+
+  const purchasePrice = document.createElement('div');
+  purchasePrice.classList.add(...useStyle('purchasePrice'));
+  purchasePrice.innerText = order.totalPrice;
+  purchase.appendChild(purchasePrice);
+
+  const actions = document.createElement('div');
+  actions.classList.add(...useStyle('actions'));
+
+  const editButton = document.createElement('button');
+  editButton.classList.add(...useStyle(['actionButton','editButton']));
+  editButton.innerHTML="Edit";
+  actions.appendChild(editButton);
+
+  const saveButton = document.createElement('button');
+  saveButton.classList.add(...useStyle(['actionButton','hiddenButton','saveButton']));
+  saveButton.innerHTML="Save";
+  actions.appendChild(saveButton);
+
+  const cancelButton = document.createElement('button');
+  cancelButton.classList.add(...useStyle(['actionButton','hiddenButton','cancelButton']));
+  cancelButton.innerHTML="Cancel";
+  actions.appendChild(cancelButton);
+
+  const deleteButton = document.createElement('button');
+  deleteButton.classList.add(...useStyle(['actionButton','deleteButton']));
+  deleteButton.innerHTML="Delete";
+  actions.appendChild(deleteButton);
+
+  purchase.appendChild(actions);
+
+  return purchase;
 }
 
 // !!!!!!!!!!!!!!!!!!!!! get orders !!!!!!!!!!!!!!
