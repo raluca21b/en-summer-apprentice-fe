@@ -1,6 +1,10 @@
 import { addLoader,removeLoader } from "./src/components/loader";
 import { createEventElement } from "./src/components/createEventElement";
 import { createOrderElement } from "./src/components/createOrderElement";
+
+let events = null;
+const BASEURL = 'http:localhost:8080/events';
+
 // Navigate to a specific URL
 function navigateTo(url) {
   history.pushState(null, null, url);
@@ -11,7 +15,13 @@ function getHomePageTemplate() {
   return `
    <div id="content" >
       <img src="./src/assets/ticket.png" alt="ticket-sale" class="main-image">
-      <h1>All Events</h1>
+      <h1>Search Events</h1>
+      <div class = "filters flex flex-row items-center justify-center flex-wrap">
+        <input type = "text" id="filter-name" placeholder="Filter by name" class = "px-4 mt-4 mb-4  py-2 border rounded-md"/>
+        <select id = "filter-venue-select" class = "mt-4 ml-4 px-4 py-3 rounded-lg bg-orange-200"></select>
+        <select id = "filter-type-select" class = "mt-4 ml-4 px-4 py-3 rounded-lg bg-orange-200"></select>
+        <button id = "filter-button" class = "filter-btn mt-4 ml-4 px-4 py-3 text-white rounded-lg"><i class="fa-solid fa-magnifying-glass"></i></button>
+      </div>
       <div class="events flex items-center justify-center flex-wrap">
       </div>
     </div>
@@ -76,24 +86,98 @@ function setupInitialPage() {
   renderContent(initialUrl);
 }
 
+function liveSearch(){
+  const filterInput = document.querySelector('#filter-name');
+
+  if (filterInput){
+    const searchValue = filterInput.value;
+
+    if (searchValue !== undefined){
+      const filteredEvents = events.filter((event)=>
+        event.eventName.toLowerCase().includes(searchValue.toLowerCase())
+      );
+
+      addEventsOnPage(filteredEvents);
+    }
+  }
+}
+
+function setupFilterEvents(){
+  const nameFilterInput = document.querySelector('#filter-name');
+  const eventTypeSelect = document.querySelector('#filter-type-select');
+  const venueSelect = document.getElementById('filter-venue-select');
+
+  if (nameFilterInput){
+    const filterInterval = 500;
+    nameFilterInput.addEventListener('keyup',()=>{
+      eventTypeSelect.value = eventTypeSelect.options[0].value;
+      venueSelect.value = venueSelect.options[0].value;
+      setTimeout(liveSearch,filterInterval);
+    });
+  }
+}
+
+function setupSelectsForFilters(){
+  const eventTypeSelect = document.querySelector('#filter-type-select');
+  const venueSelect = document.getElementById('filter-venue-select');
+  venueSelect.innerHTML = getEventsVenues();
+  eventTypeSelect.innerHTML = getEventsTypes();
+}
+
 function renderHomePage() {
   const mainContentDiv = document.querySelector('.main-content-component');
   mainContentDiv.innerHTML = getHomePageTemplate();
-
+  const filterButton = document.getElementById('filter-button');
+  const eventTypeSelect = document.querySelector('#filter-type-select');
+  const venueSelect = document.getElementById('filter-venue-select');
+  setupFilterEvents();
   addLoader();
 
   fetchEvets().then(data =>{
+    setupSelectsForFilters();
     setTimeout(()=>{
       removeLoader();
     },200);
     addEventsOnPage(data);
-  })
+  });
+
+  filterButton.addEventListener('click',()=>{
+    setTimeout(filterEventsVenueAndType(),500);
+  });
+}
+
+function filterEventsVenueAndType(){
+  const eventTypeSelected = document.querySelector('#filter-type-select').value;
+  const venueSelected = document.getElementById('filter-venue-select').value;
+  console.log(eventTypeSelected);
+  let queryParams = [];
+
+  if (eventTypeSelected !== null && eventTypeSelected !== "") {
+    queryParams.push(`eventTypeName=${eventTypeSelected}`);
+  }
+
+  if (venueSelected !== null && venueSelected !== "") {
+      queryParams.push(`venueID=${venueSelected}`);
+  }
+
+  const queryString = queryParams.length > 0 ? `?${queryParams.join('&')}` : '';
+
+  const url = new URL(`${BASEURL}${queryString}`);
+  fetchFilteredEvents(url).then((data)=>{
+    addEventsOnPage(data);
+  });
 }
 
 async function fetchEvets(){
   const response = await fetch('http://localhost:8080/events');
-  const data = await response.json();
-  return data;
+  events = await response.json();
+  return events;
+}
+
+async function fetchFilteredEvents(url){
+  const response = await fetch(url);
+  const filteredEvents = await response.json();
+  return filteredEvents;
 }
 
 const addEventsOnPage = (events) => {
@@ -138,6 +222,25 @@ function renderOrdersPage(categories) {
     })
   }
 }
+
+function getEventsVenues(){
+  const venueSet = new Set(events.map((event)=>event.venueDTO));
+  let select_options = '<option value="">Venue...</option>';
+  venueSet.forEach(venue => {
+    select_options += `<option value="${venue.venueID}">${venue.type}</option>`
+  });
+  return select_options;
+}
+
+function getEventsTypes(){
+  const eventTypeSet = new Set(events.map((event)=>event.eventType));
+  let select_options_types = '<option value="">Type...</option>';
+  eventTypeSet.forEach(eventType => {
+    select_options_types += `<option value="${eventType}">${eventType}</option>`
+  });
+  return select_options_types;
+}
+
 // Render content based on URL
 function renderContent(url) {
   const mainContentDiv = document.querySelector('.main-content-component');
