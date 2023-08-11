@@ -1,3 +1,6 @@
+import { addLoader,removeLoader } from "./src/components/loader";
+import { createEventElement } from "./src/components/createEventElement";
+import { createOrderElement } from "./src/components/createOrderElement";
 // Navigate to a specific URL
 function navigateTo(url) {
   history.pushState(null, null, url);
@@ -18,7 +21,27 @@ function getHomePageTemplate() {
 function getOrdersPageTemplate() {
   return `
     <div id="content">
+<<<<<<< HEAD
+      <h1 class="text-2xl mb-4 mt-8 text-center">Purchased Tickets</h1>
+      <div class = "purchases ml-6 mr-6">
+          <div class="bg-white px-4 py-3 fap-x-4 flex font-bold">
+            <button class="flex flex-1 text-center justify-center" id="sorting-button-1">
+              <span >Name</span>
+            </button>
+            <span class="flex-1">No of Tickets</span>
+            <span class="flex-1">Category</span>
+            <span class="flex-1 hidden md:flex">Ordered At</span>
+            <button class="hidden md:flex text-center" id="sorting-button-2">
+              <span >Total Price</span>
+            </button>
+            <span class="w-28 sm:w-8"></span>
+          </div>
+          <div id="purchases-content">
+          </div>
+      </div>
+=======
     <h1 class="text-2xl mb-4 mt-8 text-center">Purchased Tickets</h1>
+>>>>>>> main
     </div>
   `;
 }
@@ -61,7 +84,12 @@ function renderHomePage() {
   const mainContentDiv = document.querySelector('.main-content-component');
   mainContentDiv.innerHTML = getHomePageTemplate();
 
+  addLoader();
+
   fetchEvets().then(data =>{
+    setTimeout(()=>{
+      removeLoader();
+    },200);
     addEventsOnPage(data);
   })
 }
@@ -83,6 +111,39 @@ const addEventsOnPage = (events) => {
   }
 }
 
+<<<<<<< HEAD
+async function fetchOrders(){
+  const response = await fetch("http://localhost:8080/orders");
+  const orders = await response.json();
+  return orders;
+}
+
+function renderOrdersPage(categories) {
+  const mainContentDiv = document.querySelector('.main-content-component');
+  mainContentDiv.innerHTML = getOrdersPageTemplate();
+  const purchaseDiv = document.querySelector('.purchases')
+  const purchasesContent = document.getElementById('purchases-content');
+  
+  addLoader();
+  if (purchaseDiv){
+    fetchOrders().then((orders) =>{
+      if(orders.length){
+        setTimeout(()=>{
+          removeLoader();
+        },200);
+        orders.forEach((order) =>{
+          const newOrder = createOrderElement(order);
+          purchasesContent.appendChild(newOrder);
+        });
+        purchaseDiv.appendChild(purchasesContent);
+      } else{
+        removeLoader();
+        mainContentDiv.innerHTML = 'no orders yet';
+      }
+    })
+  }
+}
+=======
 const createEventElement = (eventData)=>{
   const {eventID, eventName, eventDescription, venueDTO, startDate,endDate, ticketsCategory} = eventData;
   const eventDiv = document.createElement('div');
@@ -202,6 +263,7 @@ function renderOrdersPage(categories) {
   mainContentDiv.innerHTML = getOrdersPageTemplate();
 }
 
+>>>>>>> main
 // Render content based on URL
 function renderContent(url) {
   const mainContentDiv = document.querySelector('.main-content-component');
