@@ -2,7 +2,7 @@ import { addLoader,removeLoader } from "./src/components/loader";
 import { createEventElement } from "./src/components/createEventElement";
 import { createOrderElement } from "./src/components/createOrderElement";
 
-let events = null;
+let events = [];
 const BASEURL = 'http:localhost:8080/events';
 
 // Navigate to a specific URL
@@ -124,7 +124,7 @@ function setupSelectsForFilters(){
   eventTypeSelect.innerHTML = getEventsTypes();
 }
 
-function renderHomePage() {
+async function renderHomePage() {
   const mainContentDiv = document.querySelector('.main-content-component');
   mainContentDiv.innerHTML = getHomePageTemplate();
   const filterButton = document.getElementById('filter-button');
@@ -133,13 +133,14 @@ function renderHomePage() {
   setupFilterEvents();
   addLoader();
 
-  fetchEvets().then(data =>{
-    setupSelectsForFilters();
-    setTimeout(()=>{
-      removeLoader();
-    },200);
-    addEventsOnPage(data);
-  });
+  await fetchEvets();
+
+  setupSelectsForFilters();
+  setTimeout(()=>{
+    removeLoader();
+  },200);
+
+  addEventsOnPage(events);
 
   filterButton.addEventListener('click',()=>{
     setTimeout(filterEventsVenueAndType(),500);
@@ -170,7 +171,6 @@ function filterEventsVenueAndType(){
 async function fetchEvets(){
   const response = await fetch('http://localhost:8080/events');
   events = await response.json();
-  return events;
 }
 
 async function fetchFilteredEvents(url){
