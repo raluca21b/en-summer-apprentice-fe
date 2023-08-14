@@ -33,18 +33,20 @@ function getOrdersPageTemplate() {
     <div id="content">
       <h1 class="text-2xl mb-4 mt-8 text-center">Purchased Tickets</h1>
       <div class = "purchases ml-6 mr-6">
-          <div class="bg-white px-4 py-3 fap-x-4 flex font-bold">
-            <button class="flex flex-1 text-center justify-center" id="sorting-button-1">
-              <span >Name</span>
-            </button>
-            <span class="flex-1">No of Tickets</span>
-            <span class="flex-1">Category</span>
-            <span class="flex-1 hidden md:flex">Ordered At</span>
-            <button class="hidden md:flex text-center" id="sorting-button-2">
-              <span >Total Price</span>
-            </button>
-            <span class="w-28 sm:w-8"></span>
-          </div>
+            <div class="bg-white px-4 py-3 fap-x-4 flex font-bold">
+              <span class="flex-1">Name</span>
+              <span class="flex-1">No of Tickets</span>
+              <span class="flex-1">Category</span>
+              <button class="flex flex-1 text-center justify-center" id="sorting-button-date">
+                <i class="fa-solid fa-arrow-down-short-wide"></i>
+                <span class="flex-1 hidden md:flex">Ordered At</span>
+              </button>
+              <button class="hidden md:flex text-center" id="sorting-button-price">
+                <i class="fa-solid fa-arrow-down-short-wide"></i>
+                <span >Total Price</span>
+              </button>
+              <span class="w-28 sm:w-8"></span>
+            </div>
           <div id="purchases-content">
           </div>
       </div>
@@ -202,7 +204,12 @@ function renderOrdersPage(categories) {
   mainContentDiv.innerHTML = getOrdersPageTemplate();
   const purchaseDiv = document.querySelector('.purchases')
   const purchasesContent = document.getElementById('purchases-content');
-  
+  const sortPriceButton = document.getElementById('sorting-button-price');
+  const sortDateButton = document.getElementById('sorting-button-date');
+  let currentSortOrder = "asc";
+  let ordersByPrice = [];
+  let ordersByDate = [];
+
   addLoader();
   if (purchaseDiv){
     fetchOrders().then((orders) =>{
@@ -210,17 +217,71 @@ function renderOrdersPage(categories) {
         setTimeout(()=>{
           removeLoader();
         },200);
-        orders.forEach((order) =>{
-          const newOrder = createOrderElement(order);
-          purchasesContent.appendChild(newOrder);
-        });
-        purchaseDiv.appendChild(purchasesContent);
+        ordersByPrice = sortOrdersByPrice([...orders]);
+        ordersByDate = sortOrdersByDate([...orders]);
+        renderOrdersSorted(orders);
       } else{
         removeLoader();
         mainContentDiv.innerHTML = 'no orders yet';
       }
-    })
+    });
+
+    sortPriceButton.addEventListener('click', () => {
+      currentSortOrder = toggleSortOrder(currentSortOrder);
+      renderOrdersSorted(currentSortOrder === "asc" ? ordersByPrice : ordersByPrice.slice().reverse());
+      updateSortButtonIcon(sortPriceButton, currentSortOrder);
+    });
+  
+    sortDateButton.addEventListener('click', () => {
+      currentSortOrder = toggleSortOrder(currentSortOrder);
+      renderOrdersSorted(currentSortOrder === "asc" ? ordersByDate : ordersByDate.slice().reverse());
+      updateSortButtonIcon(sortDateButton, currentSortOrder);
+    });
   }
+}
+
+function renderOrdersSorted(orders) { 
+  const purchaseDiv = document.querySelector('.purchases')
+  const purchasesContent = document.getElementById('purchases-content');
+  purchasesContent.innerHTML = "";
+  addLoader();
+  if (purchaseDiv) {
+    if (orders.length) {
+      setTimeout(() => {
+        removeLoader();
+      }, 200);
+      orders.forEach((order) => {
+        const newOrder = createOrderElement(order);
+        purchasesContent.appendChild(newOrder);
+      });
+      purchaseDiv.appendChild(purchasesContent);
+    } else {
+      removeLoader();
+      purchasesContent.innerHTML = 'no orders yet';
+    }
+  }
+}
+
+function sortOrdersByPrice(orders) {
+  return orders.sort((a, b) => a.totalPrice - b.totalPrice);
+}
+
+function sortOrdersByDate(orders) {
+  return orders.sort((a, b) => {
+    const dateA = new Date(a.orderedAt);
+    const dateB = new Date(b.orderedAt);
+    return dateA - dateB;
+  });
+}
+
+function toggleSortOrder(currentSortOrder) {
+  return currentSortOrder === "asc" ? "desc" : "asc";
+}
+
+function updateSortButtonIcon(button, sortOrder) {
+  const icon = button.querySelector('.fa-solid');
+  icon.classList.remove('fa-arrow-up-short-wide', 'fa-arrow-down-short-wide');
+  icon.classList.add(sortOrder === 'asc' ? 'fa-arrow-up-short-wide' : 'fa-arrow-down-short-wide');
 }
 
 function getEventsVenues(){
