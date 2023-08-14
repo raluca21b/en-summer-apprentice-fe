@@ -1,5 +1,6 @@
 import { useStyle } from "./styles";
 
+
 export const createOrderElement = (order) =>{
     const purchase = document.createElement('div');
     purchase.id = `purchase-${order.orderID}`;
@@ -45,9 +46,12 @@ export const createOrderElement = (order) =>{
     vipOption.textContent = 'VIP';
   
     purchaseType.appendChild(defaultOption);
-    purchaseType.appendChild(standardOption);
-    purchaseType.appendChild(vipOption);
-  
+    if (defaultOption.value === 'Standard'){
+        purchaseType.appendChild(vipOption);
+    }else{
+        purchaseType.appendChild(standardOption);
+    }
+    
     const purchaseTypeWrapper = document.createElement('div');
     purchaseTypeWrapper.classList.add(...useStyle('purchaseTypeWrapper'));
     purchaseTypeWrapper.appendChild(purchaseType);
@@ -87,10 +91,40 @@ export const createOrderElement = (order) =>{
     actions.appendChild(deleteButton);
   
     purchase.appendChild(actions);
-  
-    return purchase;
-  }
 
+    deleteButton.addEventListener('click',()=>{
+        deleteButton.classList.add(...useStyle('hiddenButton'));
+        saveButton.classList.remove(...useStyle('hiddenButton'));
+        cancelButton.classList.remove(...useStyle('hiddenButton'));
+    });
+    
+    saveButton.addEventListener('click', () => {
+        deleteOrder(order.orderID);
+    });
+    cancelButton.addEventListener('click', () => {
+        deleteButton.classList.remove(...useStyle('hiddenButton'));
+        saveButton.classList.add(...useStyle('hiddenButton'));
+        cancelButton.classList.add(...useStyle('hiddenButton'));
+    });
+
+    return purchase;
+}
+
+const deleteOrder = (orderID) => {
+    fetch(`http://localhost:7071/api/Order/Delete?id=${orderID}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }).then((response) => {
+        if (response.status === 204) {
+        setTimeout(()=>{
+            location.reload();
+          },200);
+        } 
+      });
+};
+  
 async function fetchEventDetailsByEventId(eventID){
     const response = await fetch(`http://localhost:8080/events/${eventID}`);
     const eventData = await response.json();
