@@ -95,3 +95,13 @@ h1 {
   height: 20rem;
   border-radius: 20px;
 }
+
+.filters{
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.filter-btn{
+  background: #de411b;
+  border-radius: 20px;
+}
