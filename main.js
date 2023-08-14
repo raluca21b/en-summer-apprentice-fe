@@ -2,7 +2,7 @@ import { addLoader,removeLoader } from "./src/components/loader";
 import { createEventElement } from "./src/components/createEventElement";
 import { createOrderElement } from "./src/components/createOrderElement";
 
-let events = [];
+let events = null;
 const BASEURL = 'http:localhost:8080/events';
 
 // Navigate to a specific URL
@@ -124,7 +124,7 @@ function setupSelectsForFilters(){
   eventTypeSelect.innerHTML = getEventsTypes();
 }
 
-async function renderHomePage() {
+function renderHomePage() {
   const mainContentDiv = document.querySelector('.main-content-component');
   mainContentDiv.innerHTML = getHomePageTemplate();
   const filterButton = document.getElementById('filter-button');
@@ -133,14 +133,14 @@ async function renderHomePage() {
   setupFilterEvents();
   addLoader();
 
-  await fetchEvets();
-
-  setupSelectsForFilters();
-  setTimeout(()=>{
-    removeLoader();
-  },200);
-
-  addEventsOnPage(events);
+  fetchEvets().then((data) =>{
+    events = data;
+    setupSelectsForFilters();
+    setTimeout(()=>{
+      removeLoader();
+    },200);
+    addEventsOnPage(events);
+  });
 
   filterButton.addEventListener('click',()=>{
     setTimeout(filterEventsVenueAndType(),500);
@@ -170,7 +170,8 @@ function filterEventsVenueAndType(){
 
 async function fetchEvets(){
   const response = await fetch('http://localhost:8080/events');
-  events = await response.json();
+  const allEvents = await response.json();
+  return allEvents;
 }
 
 async function fetchFilteredEvents(url){
