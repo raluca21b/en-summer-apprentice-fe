@@ -149,7 +149,6 @@ function renderHomePage() {
 function filterEventsVenueAndType(){
   const eventTypeSelected = document.querySelector('#filter-type-select').value;
   const venueSelected = document.getElementById('filter-venue-select').value;
-  console.log(eventTypeSelected);
   let queryParams = [];
 
   if (eventTypeSelected !== null && eventTypeSelected !== "") {
