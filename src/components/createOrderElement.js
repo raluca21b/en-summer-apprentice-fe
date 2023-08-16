@@ -1,6 +1,5 @@
 import { useStyle } from "./styles";
 import { addLoader,removeLoader } from "./loader";
-import { stringify } from "postcss";
 
 export const createOrderElement = (order) =>{
     const purchase = document.createElement('div');
@@ -171,7 +170,6 @@ const deleteOrder = (orderID) => {
     }).finally(()=>{
         removeLoader();
     });
-
 };
 
 function updateOrder(order, newCategory, newQuantity){
@@ -198,8 +196,6 @@ function updateOrder(order, newCategory, newQuantity){
         .catch((err) =>{
             throw new Error(err);
         });
-       
-    
 }
   
 async function fetchEventDetailsByEventId(eventID){
