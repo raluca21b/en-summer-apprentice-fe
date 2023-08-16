@@ -1,5 +1,5 @@
 import { useStyle } from "./styles";
-
+import { addLoader,removeLoader } from "./loader";
 
 export const createOrderElement = (order) =>{
     const purchase = document.createElement('div');
@@ -31,27 +31,22 @@ export const createOrderElement = (order) =>{
   
     const purchaseType = document.createElement('select');
     purchaseType.classList.add('purchaseType');
-    purchaseType.setAttribute('disabled','true');
+    purchaseType.setAttribute('disabled', 'true');
     
-    const defaultOption = document.createElement('option');
-    defaultOption.value = `${order.ticketCategory.description}`;
-    defaultOption.textContent = `${order.ticketCategory.description}`;
-  
-    const standardOption = document.createElement('option');
-    standardOption.value = 'Standard';
-    standardOption.textContent = 'Standard';
-  
-    const vipOption = document.createElement('option');
-    vipOption.value = 'VIP';
-    vipOption.textContent = 'VIP';
-  
-    purchaseType.appendChild(defaultOption);
-    if (defaultOption.value === 'Standard'){
-        purchaseType.appendChild(vipOption);
-    }else{
-        purchaseType.appendChild(standardOption);
-    }
+    const categories = [
+        { value: 'Standard', text: 'Standard' },
+        { value: 'VIP', text: 'VIP' }
+    ];
     
+    const options = categories.map(
+        (category) =>
+            `<option class="text-sm font-bold text-black" value="${category.value}"
+            ${category.value === order.ticketCategory.description ? 'selected' : ''}>
+             ${category.text}</option>`
+    ).join('\n');
+    
+    purchaseType.innerHTML = options;
+
     const purchaseTypeWrapper = document.createElement('div');
     purchaseTypeWrapper.classList.add(...useStyle('purchaseTypeWrapper'));
     purchaseTypeWrapper.appendChild(purchaseType);
@@ -92,38 +87,116 @@ export const createOrderElement = (order) =>{
   
     purchase.appendChild(actions);
 
-    deleteButton.addEventListener('click',()=>{
-        deleteButton.classList.add(...useStyle('hiddenButton'));
+    editButton.addEventListener('click',() =>{
+        editButton.classList.add(...useStyle('hiddenButton'));
         saveButton.classList.remove(...useStyle('hiddenButton'));
         cancelButton.classList.remove(...useStyle('hiddenButton'));
+        purchaseQuantity.removeAttribute('disabled');
+        purchaseType.removeAttribute('disabled');
+    });
+
+    deleteButton.addEventListener('click',()=>{
+        const response = confirm("Are you sure you want to delete the order?");
+        if (response){
+             deleteOrder(order.orderID);
+        }
     });
     
     saveButton.addEventListener('click', () => {
-        deleteOrder(order.orderID);
-    });
-    cancelButton.addEventListener('click', () => {
-        deleteButton.classList.remove(...useStyle('hiddenButton'));
+       const newCategory = purchaseType.value;
+       const newQuantity = purchaseQuantity.value;
+       if (newCategory != order.ticketCategory.description || newQuantity != order.numberOfTickets){
+          addLoader();
+          updateOrder(order,newCategory,newQuantity)
+            .then((res)=>{
+                if (res.status === 200){
+                    res.json().then((data) =>{
+                        order = data;
+                        purchasePrice.innerHTML = order.totalPrice;
+                    }); 
+                }
+            })
+            .catch((err) =>{
+                console.error(err);
+            })
+            .finally(()=>{
+                setTimeout(() => 
+                {
+                    removeLoader()
+                },200);
+            });
+        }
+        editButton.classList.remove(...useStyle('hiddenButton'));
         saveButton.classList.add(...useStyle('hiddenButton'));
         cancelButton.classList.add(...useStyle('hiddenButton'));
+        purchaseQuantity.setAttribute('disabled','true');
+        purchaseType.setAttribute('disabled','true');
+    });
+
+    cancelButton.addEventListener('click', () => {
+        editButton.classList.remove(...useStyle('hiddenButton'));
+        saveButton.classList.add(...useStyle('hiddenButton'));
+        cancelButton.classList.add(...useStyle('hiddenButton'));
+        purchaseQuantity.setAttribute('disabled','true');
+        purchaseType.setAttribute('disabled','true');
+
+        purchaseQuantity.value = order.numberOfTickets;
+        Array.from(purchaseType.options).forEach(function(element,index){
+            if (element.value == order.ticketCategory.description){
+                purchaseType.options.selectedIndex = index;
+                return;
+            }
+        })
     });
 
     return purchase;
 }
 
 const deleteOrder = (orderID) => {
+    addLoader();
     fetch(`http://localhost:7071/api/Order/Delete?id=${orderID}`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
       },
-    }).then((response) => {
+    })
+    .then((response) => {
         if (response.status === 204) {
-        setTimeout(()=>{
-            location.reload();
-          },200);
+            const purchaseToRemove = document.getElementById(`purchase-${orderID}`);
+            purchaseToRemove.remove();
         } 
-      });
+    }).catch((err)=>{
+        console.error(err);
+    }).finally(()=>{
+        removeLoader();
+    });
 };
+
+function updateOrder(order, newCategory, newQuantity){
+   return fetch(`http://localhost:7071/api/Order/Patch`, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                orderID: order.orderID,
+                eventID: order.eventID,
+                ticketDescription: newCategory,
+                numberOfTickets: newQuantity
+            })
+        })
+        .then((res) => {
+            if (res.status === 200) {
+                //here comes toastr for success
+            } else {
+                //here comes toastr for
+            }
+            return res;
+        })
+        .catch((err) =>{
+            throw new Error(err);
+        });
+}
   
 async function fetchEventDetailsByEventId(eventID){
     const response = await fetch(`http://localhost:8080/events/${eventID}`);
