@@ -1,5 +1,6 @@
 import { useStyle } from "./styles";
 import { addLoader,removeLoader } from "./loader";
+import { addDeleteConfirmationWindow,removeDeleteWindow } from "./deleteConfirmation";
 
 export const createOrderElement = (order) =>{
     const purchase = document.createElement('div');
@@ -96,10 +97,17 @@ export const createOrderElement = (order) =>{
     });
 
     deleteButton.addEventListener('click',()=>{
-        const response = confirm("Are you sure you want to delete the order?");
-        if (response){
-             deleteOrder(order.orderID);
-        }
+        addDeleteConfirmationWindow();
+        const okButton = document.querySelector('.popup-delete');
+        const cancelButton = document.querySelector('.popup-cancel');
+       okButton.addEventListener('click',()=>{
+        deleteOrder(order.orderID);
+        removeDeleteWindow();
+       });
+        cancelButton.addEventListener('click',()=>{
+            removeDeleteWindow();
+        });   
+        
     });
     
     saveButton.addEventListener('click', () => {
@@ -125,6 +133,8 @@ export const createOrderElement = (order) =>{
                     removeLoader()
                 },200);
             });
+        }else{
+            toastr.warning('Nothing was changed');
         }
         editButton.classList.remove(...useStyle('hiddenButton'));
         saveButton.classList.add(...useStyle('hiddenButton'));
@@ -164,9 +174,11 @@ const deleteOrder = (orderID) => {
         if (response.status === 204) {
             const purchaseToRemove = document.getElementById(`purchase-${orderID}`);
             purchaseToRemove.remove();
+            toastr.success('Order  deleted successfully');
         } 
     }).catch((err)=>{
         console.error(err);
+        toastr.error('Error occured. Order cannot be deleted!');
     }).finally(()=>{
         removeLoader();
     });
@@ -187,9 +199,9 @@ function updateOrder(order, newCategory, newQuantity){
         })
         .then((res) => {
             if (res.status === 200) {
-                //here comes toastr for success
+                toastr.success('Order updated successfully!');
             } else {
-                //here comes toastr for
+                toastr.error('Order cannot be changed!');
             }
             return res;
         })

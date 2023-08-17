@@ -75,12 +75,12 @@ export const createEventElement = (eventData)=>{
     addToCartButton.addEventListener('click', () => {
       const selectedTicketCategoryRadio = document.querySelector(`input[name="ticketCategory-${eventID}"]:checked`);
       if (!selectedTicketCategoryRadio) {
-        alert('Please select a ticket category');
+        toastr.warning("Cannot place order. Select a ticket category first");
         return;
       } else{
         handleAddToCart(eventID,input,selectedTicketCategoryRadio,addToCartButton);
+        
       }
-     
     });
   
    
@@ -105,12 +105,12 @@ export const createEventElement = (eventData)=>{
         }).then((response) => {
           return response.json().then((data) =>{
             if(!response.ok){
-              console.log("Something went wrong...");
+              toastr.error("Something went wrong...");
             }
             return data;
           })
         }).then((data) =>{
-          console.log("Added successfully!");
+          toastr.success("Order placed successfully!");
           input.value = 0;
           addToCartButton.disabled = true;
           selectedTicketCategoryRadio.checked = false;
