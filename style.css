@@ -63,8 +63,8 @@ h1 {
 }
 
 .logo {
-  height: 50px;
-  padding: 6px;
+  height: 80px;
+  padding: 5px;
 }
 
 .add-btn {
@@ -86,13 +86,13 @@ h1 {
 }
 
 .event-card{
-  padding: 20px;
+  padding: 30px;
 }
 
 
 .event-image{
-  width: 20rem;
-  height: 20rem;
+  width: 21rem;
+  height: 21rem;
   border-radius: 20px;
 }
 
@@ -104,4 +104,32 @@ h1 {
 .filter-btn{
   background: #de411b;
   border-radius: 20px;
+}
+
+.delete-window{
+  border: 2px #de411b;
+  border-radius: 10px;
+  background-color: whitesmoke;
+  height: 90px;
+  box-shadow: 5px 5px 5px #000;
+  padding: 15px;
+}
+
+.delete-buttons{
+  margin-top: 20px;
+  text-align: right;
+}
+
+.popup-cancel{
+  background-color: #de411b;
+  border-radius: 10px;
+  color:#fff;
+  width: 55px;
+}
+
+.popup-delete{
+  background-color: blue;
+  color:#fff;
+  border-radius: 10px;
+  width: 30px;
 }

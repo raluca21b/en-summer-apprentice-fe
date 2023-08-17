@@ -132,6 +132,7 @@ function renderHomePage() {
   const filterButton = document.getElementById('filter-button');
   const eventTypeSelect = document.querySelector('#filter-type-select');
   const venueSelect = document.getElementById('filter-venue-select');
+  toastr.options.timeOut = 1000;
   setupFilterEvents();
   addLoader();
 
@@ -209,6 +210,7 @@ function renderOrdersPage(categories) {
   let currentSortOrder = "asc";
   let ordersByPrice = [];
   let ordersByDate = [];
+  toastr.options.timeOut = 1000;
 
   addLoader();
   if (purchaseDiv){
@@ -228,7 +230,7 @@ function renderOrdersPage(categories) {
 
     sortPriceButton.addEventListener('click', () => {
       currentSortOrder = toggleSortOrder(currentSortOrder);
-      renderOrdersSorted(currentSortOrder === "asc" ? ordersByPrice : ordersByPrice.slice().reverse());
+      renderOrdersSorted(currentSortOrder === "asc" ? ordersByPrice : ordersByPrice.slice().reverse());r
       updateSortButtonIcon(sortPriceButton, currentSortOrder);
     });
   
