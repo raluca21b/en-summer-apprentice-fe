@@ -230,7 +230,7 @@ function renderOrdersPage(categories) {
 
     sortPriceButton.addEventListener('click', () => {
       currentSortOrder = toggleSortOrder(currentSortOrder);
-      renderOrdersSorted(currentSortOrder === "asc" ? ordersByPrice : ordersByPrice.slice().reverse());r
+      renderOrdersSorted(currentSortOrder === "asc" ? ordersByPrice : ordersByPrice.slice().reverse());
       updateSortButtonIcon(sortPriceButton, currentSortOrder);
     });
   
